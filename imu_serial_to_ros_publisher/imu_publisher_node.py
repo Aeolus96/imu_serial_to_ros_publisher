@@ -9,13 +9,19 @@ class ImuSerialPublisher(Node):
     def __init__(self):
         super().__init__("imu_serial_publisher")
 
-        # Params: serial port and baudrate
         self.declare_parameter("serial_port", "/dev/ttyACM0")
         self.declare_parameter("baud_rate", 115200)
+        self.declare_parameter("topic", "imu/data")
+        self.declare_parameter("frame_id", "imu_link")
+
         serial_port = self.get_parameter("serial_port").get_parameter_value().string_value
         baud_rate = self.get_parameter("baud_rate").get_parameter_value().integer_value
+        topic_name = self.get_parameter("topic").get_parameter_value().string_value
+        frame_id = self.get_parameter("frame_id").get_parameter_value().string_value
 
         self.get_logger().info(f"Starting serial port: {serial_port} at {baud_rate}")
+        self.get_logger().info(f"Publishing on topic: {topic_name}")
+        self.get_logger().info(f"Using frame_id: {frame_id}")
 
         # Setup serial
         try:
@@ -24,8 +30,9 @@ class ImuSerialPublisher(Node):
             self.get_logger().error(f"Could not open serial port: {e}")
             raise
 
-        # IMU publisher
-        self.imu_pub = self.create_publisher(Imu, "imu/data", 10)
+        # IMU publisher with parameterized topic
+        self.imu_pub = self.create_publisher(Imu, topic_name, 10)
+        self._frame_id = frame_id
 
         # Timer to check serial
         self.timer = self.create_timer(0.02, self.timer_callback)  # 50 Hz
@@ -50,7 +57,7 @@ class ImuSerialPublisher(Node):
             self.get_logger().warn(f"Invalid JSON: {line}")
             return
 
-        # Check for required fields
+        # Required fields check
         if "header" not in data or "linear_acceleration" not in data or "angular_velocity" not in data:
             self.get_logger().warn(f"Incomplete IMU data: {line}")
             return
@@ -58,25 +65,25 @@ class ImuSerialPublisher(Node):
         imu_msg = Imu()
 
         # Header
-        imu_msg.header.frame_id = "imu_link"  # Standard frame
+        imu_msg.header.frame_id = self._frame_id
         secs = data["header"].get("stamp", {}).get("secs", 0)
         nsecs = data["header"].get("stamp", {}).get("nsecs", 0)
         imu_msg.header.stamp.sec = int(secs)
         imu_msg.header.stamp.nanosec = int(nsecs)
 
-        # Orientation quaternion (safe float conversion)
+        # Orientation quaternion
         o = data.get("orientation", {})
         imu_msg.orientation.x = float(o.get("x", 0.0) or 0.0)
         imu_msg.orientation.y = float(o.get("y", 0.0) or 0.0)
         imu_msg.orientation.z = float(o.get("z", 0.0) or 0.0)
         imu_msg.orientation.w = float(o.get("w", 1.0) or 1.0)
 
-        # Orientation covariance (list to array, with float conversion)
+        # Orientation covariance
         ori_cov = data.get("orientation_covariance", [0.0] * 9)
         for i in range(9):
             imu_msg.orientation_covariance[i] = float(ori_cov[i] if i < len(ori_cov) else 0.0)
 
-        # Linear acceleration (safe float conversion)
+        # Linear acceleration
         a = data.get("linear_acceleration", {})
         imu_msg.linear_acceleration.x = float(a.get("x", 0.0) or 0.0)
         imu_msg.linear_acceleration.y = float(a.get("y", 0.0) or 0.0)
@@ -87,7 +94,7 @@ class ImuSerialPublisher(Node):
         for i in range(9):
             imu_msg.linear_acceleration_covariance[i] = float(la_cov[i] if i < len(la_cov) else 0.0)
 
-        # Angular velocity (safe float conversion)
+        # Angular velocity
         g = data.get("angular_velocity", {})
         imu_msg.angular_velocity.x = float(g.get("x", 0.0) or 0.0)
         imu_msg.angular_velocity.y = float(g.get("y", 0.0) or 0.0)
