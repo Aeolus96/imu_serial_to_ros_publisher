@@ -10,7 +10,7 @@ class ImuSerialPublisher(Node):
         super().__init__("imu_serial_publisher")
 
         # Params: serial port and baudrate
-        self.declare_parameter("serial_port", "/dev/ttyUSB0")
+        self.declare_parameter("serial_port", "/dev/ttyACM0")
         self.declare_parameter("baud_rate", 115200)
         serial_port = self.get_parameter("serial_port").get_parameter_value().string_value
         baud_rate = self.get_parameter("baud_rate").get_parameter_value().integer_value
@@ -50,49 +50,56 @@ class ImuSerialPublisher(Node):
             self.get_logger().warn(f"Invalid JSON: {line}")
             return
 
+        # Check for required fields
+        if "header" not in data or "linear_acceleration" not in data or "angular_velocity" not in data:
+            self.get_logger().warn(f"Incomplete IMU data: {line}")
+            return
+
         imu_msg = Imu()
 
-        # Header timestamp
-        secs = data.get("header", {}).get("stamp", {}).get("secs", 0)
-        nsecs = data.get("header", {}).get("stamp", {}).get("nsecs", 0)
+        # Header
+        imu_msg.header.frame_id = "imu_link"  # Standard frame
+        secs = data["header"].get("stamp", {}).get("secs", 0)
+        nsecs = data["header"].get("stamp", {}).get("nsecs", 0)
         imu_msg.header.stamp.sec = int(secs)
         imu_msg.header.stamp.nanosec = int(nsecs)
 
-        # Orientation quaternion
+        # Orientation quaternion (safe float conversion)
         o = data.get("orientation", {})
-        imu_msg.orientation.x = o.get("x", 0.0)
-        imu_msg.orientation.y = o.get("y", 0.0)
-        imu_msg.orientation.z = o.get("z", 0.0)
-        imu_msg.orientation.w = o.get("w", 1.0)
+        imu_msg.orientation.x = float(o.get("x", 0.0) or 0.0)
+        imu_msg.orientation.y = float(o.get("y", 0.0) or 0.0)
+        imu_msg.orientation.z = float(o.get("z", 0.0) or 0.0)
+        imu_msg.orientation.w = float(o.get("w", 1.0) or 1.0)
 
-        # Orientation covariance
-        ori_cov = data.get("orientation_covariance", [])
-        for i in range(min(len(ori_cov), 9)):
-            imu_msg.orientation_covariance[i] = float(ori_cov[i])
+        # Orientation covariance (list to array, with float conversion)
+        ori_cov = data.get("orientation_covariance", [0.0] * 9)
+        for i in range(9):
+            imu_msg.orientation_covariance[i] = float(ori_cov[i] if i < len(ori_cov) else 0.0)
 
-        # Linear acceleration
+        # Linear acceleration (safe float conversion)
         a = data.get("linear_acceleration", {})
-        imu_msg.linear_acceleration.x = a.get("x", 0.0)
-        imu_msg.linear_acceleration.y = a.get("y", 0.0)
-        imu_msg.linear_acceleration.z = a.get("z", 0.0)
+        imu_msg.linear_acceleration.x = float(a.get("x", 0.0) or 0.0)
+        imu_msg.linear_acceleration.y = float(a.get("y", 0.0) or 0.0)
+        imu_msg.linear_acceleration.z = float(a.get("z", 0.0) or 0.0)
 
         # Linear acceleration covariance
-        la_cov = data.get("linear_acceleration_covariance", [])
-        for i in range(min(len(la_cov), 9)):
-            imu_msg.linear_acceleration_covariance[i] = float(la_cov[i])
+        la_cov = data.get("linear_acceleration_covariance", [0.0] * 9)
+        for i in range(9):
+            imu_msg.linear_acceleration_covariance[i] = float(la_cov[i] if i < len(la_cov) else 0.0)
 
-        # Angular velocity
+        # Angular velocity (safe float conversion)
         g = data.get("angular_velocity", {})
-        imu_msg.angular_velocity.x = g.get("x", 0.0)
-        imu_msg.angular_velocity.y = g.get("y", 0.0)
-        imu_msg.angular_velocity.z = g.get("z", 0.0)
+        imu_msg.angular_velocity.x = float(g.get("x", 0.0) or 0.0)
+        imu_msg.angular_velocity.y = float(g.get("y", 0.0) or 0.0)
+        imu_msg.angular_velocity.z = float(g.get("z", 0.0) or 0.0)
 
         # Angular velocity covariance
-        av_cov = data.get("angular_velocity_covariance", [])
-        for i in range(min(len(av_cov), 9)):
-            imu_msg.angular_velocity_covariance[i] = float(av_cov[i])
+        av_cov = data.get("angular_velocity_covariance", [0.0] * 9)
+        for i in range(9):
+            imu_msg.angular_velocity_covariance[i] = float(av_cov[i] if i < len(av_cov) else 0.0)
 
         self.imu_pub.publish(imu_msg)
+        self.get_logger().debug("Published IMU message")
 
 
 def main(args=None):
