@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="3">
+    <name>imu_serial_to_ros_publisher</name>
+    <version>0.1.0</version>
+    <description>ROS2 node publishing IMU msgs from serial JSON input</description>
+    <maintainer email="user@example.com">User</maintainer>
+    <license>Apache-2.0</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <exec_depend>rclpy</exec_depend>
+    <exec_depend>sensor_msgs</exec_depend>
+    <exec_depend>pyserial</exec_depend>
+    <member_of_group>rosidl_interface_packages</member_of_group>
+</package>
