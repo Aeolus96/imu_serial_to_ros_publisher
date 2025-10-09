@@ -162,7 +162,7 @@ class ImuSerialPublisher(Node):
         except Exception as e:
             # Catch-all: don't let a single bad read crash the node.
             self.get_logger().error(f"Unexpected error in timer_callback: {e}")
-            self.get_logger().debug(traceback.format_exc())
+            self.get_logger().debug(f"{traceback.format_exc()}")
 
     def process_line(self, line: str) -> None:
         """Parse a single newline-delimited JSON line and publish an Imu msg.
@@ -177,19 +177,19 @@ class ImuSerialPublisher(Node):
             # (model info, baud, addresses, etc.). Treat those lines as
             # non-fatal and keep them quiet at debug level so logs are not
             # flooded during device boot.
-            self.get_logger().debug("Non-JSON serial line (ignored): '%s'", line[:200])
+            self.get_logger().debug(f"Non-JSON serial line (ignored): '{line[:200]}'")
             return
 
         # Basic structural validation
         if not isinstance(data, dict):
-            self.get_logger().warning("JSON root is not an object: %r", type(data))
+            self.get_logger().warning(f"JSON root is not an object: {type(data)!r}")
             return
 
         header = data.get("header")
         lin_acc = data.get("linear_acceleration")
         ang_vel = data.get("angular_velocity")
         if header is None or lin_acc is None or ang_vel is None:
-            self.get_logger().warning("Incomplete IMU data (header/acc/gyro missing): %s", line[:200])
+            self.get_logger().warning(f"Incomplete IMU data (header/acc/gyro missing): {line[:200]}")
             return
 
         imu_msg = Imu()
@@ -205,7 +205,7 @@ class ImuSerialPublisher(Node):
             imu_msg.header.stamp.nanosec = int(now.nanosec)
         except Exception:
             # Fall back to zeros if ROS time isn't available for some reason.
-            self.get_logger().warning("Unable to read ROS clock for timestamp; using zeros: %s", line[:200])
+            self.get_logger().warning(f"Unable to read ROS clock for timestamp; using zeros: {line[:200]}")
 
         # Orientation (defaults: identity quaternion)
         o = data.get("orientation") or {}
@@ -243,7 +243,7 @@ class ImuSerialPublisher(Node):
 
         try:
             self.imu_pub.publish(imu_msg)
-            self.get_logger().debug("Published IMU message (frame=%s)", self._frame_id)
+            self.get_logger().debug(f"Published IMU message {self._frame_id}")
         except Exception as e:
             self.get_logger().error(f"Failed to publish IMU message: {e}")
             self.get_logger().debug(traceback.format_exc())
