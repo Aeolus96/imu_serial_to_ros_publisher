@@ -17,7 +17,7 @@ def generate_launch_description():
         output="screen",
         parameters=[
             {"serial_port": serial_port},
-            {"baud_rate": int(baud_rate)},
+            {"baud_rate": baud_rate},
             {"topic": topic},
             {"frame_id": frame_id},
         ],
