@@ -1,0 +1,20 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/dbutani/ros2_ws/build/seek_thermal_publisher",
+        "/home/dbutani/ros2_ws/install/seek_thermal_publisher/lib/python3.12/site-packages",
+        "/home/dbutani/ros2_ws/build/imu_serial_to_ros_publisher",
+        "/home/dbutani/ros2_ws/install/imu_serial_to_ros_publisher/lib/python3.12/site-packages",
+        "/home/dbutani/ros2_ws/build/edubot",
+        "/home/dbutani/ros2_ws/install/edubot/lib/python3.12/site-packages",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/dbutani/ros2_ws/build/seek_thermal_publisher",
+        "/home/dbutani/ros2_ws/install/seek_thermal_publisher/lib/python3.12/site-packages",
+        "/home/dbutani/ros2_ws/build/imu_serial_to_ros_publisher",
+        "/home/dbutani/ros2_ws/install/imu_serial_to_ros_publisher/lib/python3.12/site-packages",
+        "/home/dbutani/ros2_ws/build/edubot",
+        "/home/dbutani/ros2_ws/install/edubot/lib/python3.12/site-packages",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ]
+}

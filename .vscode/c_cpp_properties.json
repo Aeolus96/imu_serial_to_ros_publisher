@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/dbutani/ros2_ws/install/zed_ipc/include/**",
+        "/home/dbutani/ros2_ws/install/zed_rgb_convert/include/**",
+        "/home/dbutani/ros2_ws/install/zed_components/include/**",
+        "/home/dbutani/ros2_ws/install/rviz_plugin_zed_od/include/**",
+        "/opt/ros/jazzy/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ros2",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++17"
+    }
+  ],
+  "version": 4
+}

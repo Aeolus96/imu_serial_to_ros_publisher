@@ -1,6 +1,6 @@
-from setuptools import setup
-
 from glob import glob
+
+from setuptools import setup
 
 package_name = "imu_serial_to_ros_publisher"
 
@@ -21,6 +21,10 @@ setup(
     license="Apache-2.0",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": ["imu_publisher_node = imu_serial_to_ros_publisher.imu_publisher_node:main"],
+        "console_scripts": [
+            "imu_publisher_node = imu_serial_to_ros_publisher.imu_publisher_node:main",
+            "imu_verifier = imu_serial_to_ros_publisher.imu_verifier:main",
+            "imu_facecheck = imu_serial_to_ros_publisher.imu_facecheck:main",
+        ],
     },
 )
