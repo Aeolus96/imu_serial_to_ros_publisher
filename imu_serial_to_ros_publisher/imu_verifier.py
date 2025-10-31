@@ -67,7 +67,7 @@ class ImuVerifier(Node):
             history=QoSHistoryPolicy.KEEP_LAST,
             durability=QoSDurabilityPolicy.VOLATILE,
         )
-        self.sub = self.create_subscription(Imu, "imu/data", self.cb, qos)
+        self.sub = self.create_subscription(Imu, "imu/data_raw", self.cb, qos)
 
         self.frames = 0
         self.start = time.time()

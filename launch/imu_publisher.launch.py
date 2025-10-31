@@ -8,7 +8,7 @@ def generate_launch_description():
     serial_port = LaunchConfiguration("serial_port", default="/dev/ttyACM0")
     baud_rate = LaunchConfiguration("baud_rate", default="115200")
     namespace = LaunchConfiguration("namespace", default="")
-    topic = LaunchConfiguration("topic", default="imu/data")
+    topic = LaunchConfiguration("topic", default="imu/data_raw")
     frame_id = LaunchConfiguration("frame_id", default="imu_link")
     reconnect = LaunchConfiguration("reconnect_interval_seconds", default="2.0")
     no_tel = LaunchConfiguration("no_telemetry_warn_seconds", default="3.0")

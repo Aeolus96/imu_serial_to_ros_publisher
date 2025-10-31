@@ -25,7 +25,7 @@ class FaceCheck(Node):
             history=QoSHistoryPolicy.KEEP_LAST,
             durability=QoSDurabilityPolicy.VOLATILE,
         )
-        self.sub = self.create_subscription(Imu, "imu/data", self.cb, qos)
+        self.sub = self.create_subscription(Imu, "imu/data_raw", self.cb, qos)
         self.gx = deque(maxlen=200)
         self.gy = deque(maxlen=200)
         self.gz = deque(maxlen=200)

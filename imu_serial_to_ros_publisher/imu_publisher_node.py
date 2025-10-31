@@ -46,7 +46,7 @@ class ImuCobsPublisher(Node):
         super().__init__("imu_serial_publisher")
         self.declare_parameter("serial_port", "/dev/ttyACM0")
         self.declare_parameter("baud_rate", 115200)
-        self.declare_parameter("topic", "imu/data")
+        self.declare_parameter("topic", "imu/data_raw")
         self.declare_parameter("frame_id", "imu_link")
         self.declare_parameter("reconnect_interval_seconds", 1.0)
         self.declare_parameter("no_telemetry_warn_seconds", 3.0)

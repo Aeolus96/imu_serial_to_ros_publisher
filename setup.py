@@ -25,6 +25,7 @@ setup(
             "imu_publisher_node = imu_serial_to_ros_publisher.imu_publisher_node:main",
             "imu_verifier = imu_serial_to_ros_publisher.imu_verifier:main",
             "imu_facecheck = imu_serial_to_ros_publisher.imu_facecheck:main",
+            "imu_orientation_check = imu_serial_to_ros_publisher.imu_orientation_check:main",
         ],
     },
 )
