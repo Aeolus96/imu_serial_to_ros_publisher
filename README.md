@@ -1,132 +1,132 @@
+
 # IMU Serial to ROS Publisher
 
-ROS2 package for publishing IMU data from a serial device in ROS sensor_msgs/Imu format. This package is designed to work with various IMU sensors that communicate over serial, including LSM6DSOX, BMI088, and BNO085.
+This package publishes IMU sensor data from a serial device as `sensor_msgs/Imu`. It supports common IMUs such as LSM6DSOX, BMI088, and BNO085 via the [imu_i2c_to_serial_publisher](https://github.com/Aeolus96/imu_i2c_to_serial_publisher) firmware.
 
-## Prerequisites
+## Quick build requirements
 
-- Ubuntu 24.04 (Noble Numbat)
-- ROS2 Jazzy Jellyfish (Desktop Install)
+- Target OS: Ubuntu 24.04 (Noble Numbat)
+- Target ROS 2: Jazzy Jellyfish (desktop)
+- Python: system Python 3.12
 
-  ```bash
-  # If you haven't already installed ROS2, follow these steps:
-  sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-  
-  sudo apt update
-  sudo apt install ros-jazzy-desktop
-  ```
+## Installation (development setup)
 
-## Installation
-
-1. Install development tools and ROS2 dependencies:
+Source the ROS 2 setup in every new shell (or add to your shell rc):
 
 ```bash
-sudo apt update
-sudo apt install -y python3-pip python3-rosdep python3-colcon-common-extensions git
+source /opt/ros/jazzy/setup.bash
 ```
 
-2. Initialize rosdep if you haven't already:
+1. Initialize rosdep (first time only):
 
 ```bash
 sudo rosdep init
 rosdep update
 ```
 
-3. Create a ROS2 workspace:
+1. Create a workspace and clone the repo:
 
 ```bash
 mkdir -p ~/ros2_ws/src
 cd ~/ros2_ws/src
-```
-
-4. Clone this repository:
-
-```bash
 git clone https://github.com/Aeolus96/imu_serial_to_ros_publisher.git
 ```
 
-5. Install all dependencies automatically:
+1. Install dependencies with rosdep:
 
 ```bash
 cd ~/ros2_ws
+rosdep update
 rosdep install --from-paths src --ignore-src -r -y
 ```
 
-This will automatically install:
+1. Install Python dependencies (if needed):
 
-- Required ROS2 packages
-- Python dependencies (pyserial)
+```bash
+python3 -m pip install --user -r src/imu_serial_to_ros_publisher/requirements.txt
+```
 
-4. Build the workspace:
+1. Build and source the workspace:
 
 ```bash
 colcon build --symlink-install
+source ~/ros2_ws/install/setup.bash
 ```
 
-5. Source the workspace:
+## Serial device and stable linking
+
+For reliable device naming across reboots, create a stable symlink such as `/dev/my_imu`.
+
+To create a manual udev rule under `/etc/udev/rules.d/99-imu.rules` (use attributes from `udevadm info --attribute-walk --name /dev/ttyACM0`). Then reload udev rules and trigger (may require replugging device to take effect):
 
 ```bash
-source ~/ros2_ws/install/setup.bash
+sudo udevadm control --reload
+sudo udevadm trigger
+```
+
+Verify the symlink:
+
+```bash
+ls -l /dev/edubot_imu
+```
+
+Add your user to the dialout group so you can access serial devices:
+
+```bash
+sudo usermod -aG dialout $USER
+# then log out and log in again
 ```
 
 ## Usage
 
-### Basic IMU Publisher Launch
-
-Launch the IMU publisher node with default settings:
+Start the IMU publisher with the provided launch file:
 
 ```bash
 ros2 launch imu_serial_to_ros_publisher imu_publisher.launch.py
 ```
 
-### Launch with Custom Parameters
-
-You can specify custom parameters when launching:
+Run with custom parameters:
 
 ```bash
 ros2 launch imu_serial_to_ros_publisher imu_publisher.launch.py \
-    serial_port:=/dev/ttyACM0 \
-    baud_rate:=115200 \
-    topic:=imu/data_raw \
-    frame_id:=imu_link
+  serial_port:=/dev/edubot_imu \
+  baud_rate:=115200 \
+  topic:=imu/data_raw \
+  frame_id:=imu_link
 ```
 
-### Available Parameters
+### Common node parameters
 
-- `serial_port`: Serial port device path (default: `/dev/ttyACM0`)
-- `baud_rate`: Serial baud rate (default: 115200)
-- `topic`: ROS topic to publish on (default: `imu/data_raw`)
-- `frame_id`: TF frame ID for the IMU (default: `imu_link`)
-- `reconnect_interval_seconds`: Time between reconnection attempts (default: 2.0)
-- `no_telemetry_warn_seconds`: Time before warning about no telemetry (default: 3.0)
+- `serial_port` (string) — default `/dev/ttyACM0`
+- `baud_rate` (int) — default `115200`
+- `topic` (string) — default `imu/data_raw`
+- `frame_id` (string) — default `imu_link`
+- `reconnect_interval_seconds` (float) — default `1.0`
+- `no_telemetry_warn_seconds` (float) — default `3.0`
+- `assert_dtr` (bool) — default `false`
 
-## Available Tools
+## Tools
 
-### IMU Orientation Check
-
-Tool to verify correct IMU orientation and axis alignment:
+After launching the IMU publisher, run orientation check (interactive sign check):
 
 ```bash
 ros2 run imu_serial_to_ros_publisher imu_orientation_check --ros-args -p topic:=/imu/data_raw
 ```
 
-### IMU Verifier
-
-Tool to verify IMU data quality and calibration:
+Data quality verifier:
 
 ```bash
 ros2 run imu_serial_to_ros_publisher imu_verifier
 ```
 
-## Published Topics
+## Published topics
 
-- `imu/data_raw` ([sensor_msgs/Imu](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/Imu.html))
-  - Raw IMU data including:
-    - Linear acceleration (m/s²)
-    - Angular velocity (rad/s)
-    - Orientation quaternion (if available from sensor)
-    - Covariance matrices
+- `imu/data_raw` (`sensor_msgs/Imu`): accelerations, angular velocities, optional orientation, covariance fields.
 
-## License
+## License and contributing
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Created by [Devson Butani](https://github.com/Aeolus96), 2025
+
+MIT License. See `LICENSE` file for details.
+
+Contributing bug fixes and new features? Submit a pull request!
